@@ -1,13 +1,16 @@
 
 import secrets
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 
-from app.models import Participant, db
+from app.models import Attendance, AttendanceSession, Participant, db
 
+EVENT_TIMEZONE = ZoneInfo("Africa/Lagos")
 participants_bp = Blueprint("participants", __name__)
 
 
@@ -31,7 +34,33 @@ def dashboard():
         or 0
     )
 
-    return render_template("dashboard.html", total=total)
+    today = datetime.now(EVENT_TIMEZONE).date()
+
+    attendance_counts = db.session.execute(
+        select(
+            AttendanceSession.checkpoint,
+            func.count(Attendance.id),
+        )
+        .outerjoin(
+            Attendance,
+            Attendance.session_id == AttendanceSession.id,
+        )
+        .where(AttendanceSession.session_date == today)
+        .group_by(AttendanceSession.checkpoint)
+    ).all()
+
+    counts = dict(attendance_counts)
+
+    arrivals_today = counts.get("arrival", 0)
+    departures_today = counts.get("departure", 0)
+
+    return render_template(
+        "dashboard.html",
+        total=total,
+        arrivals_today=arrivals_today,
+        departures_today=departures_today,
+    )
+
 
 
 @participants_bp.route("/participants/new", methods=["GET", "POST"])
