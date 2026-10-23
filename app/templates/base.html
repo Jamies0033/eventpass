@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}EventPass{% endblock %} | Forge Point</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('participants.home') }}">
+      <img
+  class="brand-logo"
+  src="{{ url_for('static', filename='img/forgepoint-logo.png') }}"
+  alt="Forge Point Development Initiative"
+>
+      <span>FORGE POINT<small>DEVELOPMENT INITIATIVE</small></span>
+    </a>
+    {% if current_user.is_authenticated %}
+      <form method="post" action="{{ url_for('auth.logout') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="button button-outline" type="submit">Sign out</button>
+      </form>
+    {% endif %}
+  </header>
+
+  {% if current_user.is_authenticated %}
+   
+<nav class="nav">
+  <a href="{{ url_for('participants.dashboard') }}">Dashboard</a>
+  <a href="{{ url_for('participants.new_participant') }}">Register participant</a>
+  <a href="{{ url_for('participants.participant_list') }}">Participants</a>
+  <a href="{{ url_for('badges.badge_list') }}">QR Badges</a>
+  <a href="{{ url_for('attendance.scanner_page') }}">Scan QR</a>
+    {% if current_user.role == 'admin' %}
+      <a href="{{ url_for('admin.staff_list') }}">Administration</a>
+    {% endif %}
+</nav>
+{% endif %}
+
+    <main class="container">
+    {% for category, message in get_flashed_messages(with_categories=true) %}
+      <div class="notice {{ category }}">{{ message }}</div>
+    {% endfor %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer>FORGE POINT DEVELOPMENT INITIATIVE · EVENTPASS</footer>
+</body>
+</html>

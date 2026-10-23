@@ -1,0 +1,107 @@
+
+{% extends "base.html" %}
+
+{% block title %}Dashboard | EventPass{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">EVENT OPERATIONS / OVERVIEW</div>
+    <h1>Participant management</h1>
+    <p class="muted">
+      Registration, badge preparation and daily attendance.
+    </p>
+  </div>
+
+  <a
+    class="button button-primary"
+    href="{{ url_for('participants.new_participant') }}"
+  >
+    + Register participant
+  </a>
+</div>
+
+<div class="stats">
+  <section class="panel stat">
+    <span class="muted">Active participants</span>
+    <strong>{{ total }}</strong>
+    <span class="muted">Registered in EventPass</span>
+  </section>
+
+  <section class="panel stat">
+    <span class="muted">Attendance</span>
+    <strong>—</strong>
+    <span class="muted">Scanner coming next</span>
+  </section>
+</div>
+
+<section class="panel welcome">
+  <div class="eyebrow">PARTICIPANT MANAGEMENT</div>
+  <h2>Get your participants ready.</h2>
+  <p>
+    Register participants, review their records, and prepare for QR badge
+    printing.
+  </p>
+
+  <a
+    href="{{ url_for('participants.participant_list') }}"
+    class="text-link"
+  >
+    View participant register →
+  </a>
+</section>
+
+<section class="panel export-panel">
+  <div class="eyebrow">REPORTS / DATA MANAGEMENT</div>
+  <h2>Export your records</h2>
+  <p class="muted">
+    Download your EventPass data for reporting, record keeping and
+    end-of-program documentation.
+  </p>
+
+  <div class="export-list">
+    <div class="export-item">
+      <div class="export-icon" aria-hidden="true">CSV</div>
+
+      <div class="export-details">
+        <h3>Participant register</h3>
+        <p class="muted">
+          Participant codes, names, contact details, organizations,
+          account status and registration dates.
+        </p>
+      </div>
+
+      <a
+        class="button button-secondary"
+        href="{{ url_for('reports.export_participants') }}"
+      >
+        Download CSV
+      </a>
+    </div>
+
+    <div class="export-item">
+      <div class="export-icon" aria-hidden="true">CSV</div>
+
+      <div class="export-details">
+        <h3>Attendance report</h3>
+        <p class="muted">
+          Participant details, attendance dates, arrival and departure
+          checkpoints, scan timestamps and volunteer usernames.
+        </p>
+      </div>
+
+      <a
+        class="button button-secondary"
+        href="{{ url_for('reports.export_attendance') }}"
+      >
+        Download CSV
+      </a>
+    </div>
+  </div>
+
+  <p class="export-note muted">
+    Downloads are restricted to signed-in volunteer. Exporting data does not
+    remove records from EventPass.
+  </p>
+</section>
+{% endblock %}

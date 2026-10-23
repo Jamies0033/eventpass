@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Register Participant{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">PARTICIPANT MANAGEMENT</div>
+    <h1>Register a participant</h1>
+    <p class="muted">A unique ID and QR ticket token will be generated automatically.</p>
+  </div>
+</div>
+
+<form method="post" class="panel form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <label for="full_name">Full name *</label>
+  <input id="full_name" name="full_name" required maxlength="160"
+         value="{{ request.form.get('full_name', '') }}">
+
+  <div class="form-grid">
+    <div>
+      <label for="email">Email address</label>
+      <input id="email" type="email" name="email" maxlength="254"
+             value="{{ request.form.get('email', '') }}">
+    </div>
+    <div>
+      <label for="phone">Phone number</label>
+      <input id="phone" name="phone" maxlength="30"
+             value="{{ request.form.get('phone', '') }}">
+    </div>
+  </div>
+
+  <label for="organization">School / institution</label>
+  <input id="organization" name="organization" maxlength="160"
+         value="{{ request.form.get('organization', '') }}">
+
+  <div class="actions">
+    <a class="button button-outline" href="{{ url_for('participants.dashboard') }}">Cancel</a>
+    <button class="button button-primary" type="submit">Register participant</button>
+  </div>
+</form>
+{% endblock %}

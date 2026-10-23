@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Volunteer Login{% endblock %}
+{% block content %}
+<section class="login-wrap">
+  <div class="eyebrow">PROGRAM OPERATIONS</div>
+  <h1>Welcome back.</h1>
+  <p class="muted">Sign in to manage participant registration and attendance.</p>
+
+  <form method="post" class="panel form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <label for="username">Username</label>
+    <input id="username" name="username" required maxlength="80"
+           autocomplete="username">
+
+    <label for="password">Password</label>
+    <input id="password" type="password" name="password" required
+           autocomplete="current-password">
+
+    <button class="button button-primary full" type="submit">Sign in</button>
+  </form>
+</section>
+{% endblock %}

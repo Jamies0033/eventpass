@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Secrets and local configuration
+.env
+.env.*
+
+# Local databases and backups
+instance/
+backups/
+*.db
+*.sqlite3
+*.sqlite
+*.broken-backup
+
+# Testing
+.pytest_cache/
+.coverage
+
+# Editor and manual backup files
+*.bak
+*.before-*

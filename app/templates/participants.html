@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Participants{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">PARTICIPANT DIRECTORY</div>
+    <h1>Registered participants</h1>
+    <p class="muted">Search by participant name or unique ID.</p>
+  </div>
+  <a class="button button-primary" href="{{ url_for('participants.new_participant') }}">
+    + Register participant
+  </a>
+</div>
+
+<form method="get" class="search">
+  <input name="q" aria-label="Search participants"
+         placeholder="Search name or ID..." value="{{ search }}">
+  <button class="button button-primary" type="submit">Search</button>
+</form>
+
+<section class="panel table-wrap">
+  <table>
+   <thead>
+  <tr>
+    <th>Participant ID</th>
+    <th>Name</th>
+    <th>Organization</th>
+    <th>Action</th>
+  </tr>
+</thead>
+    <tbody>
+      {% for p in participants %}
+      <tr>
+        <td><strong>{{ p.participant_code }}</strong></td>
+<td>{{ p.full_name }}</td>
+<td>{{ p.organization or "—" }}</td>
+<td>
+  <form method="post"
+        action="{{ url_for('participants.delete_participant', participant_id=p.id) }}"
+        onsubmit="return confirm('Remove {{ p.full_name|e }} from the active participant directory?');">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="button"
+            style="background:#b42318;color:#fff;border:0;">
+      Delete
+    </button>
+  </form>
+</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" class="muted">No participants found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+<p class="muted">{{ participants|length }} participant(s) shown.</p>
+{% endblock %}

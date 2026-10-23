@@ -1,0 +1,170 @@
+
+{% extends "base.html" %}
+
+{% block title %}Scan QR Attendance{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">EVENT OPERATIONS / ATTENDANCE</div>
+    <h1>QR attendance scanner</h1>
+    <p class="muted">Scan a participant's Summit 2026 badge.</p>
+  </div>
+  <a class="button button-secondary"
+     href="{{ url_for('badges.badge_list') }}">QR Badges</a>
+</div>
+
+<section class="panel" style="max-width: 760px; margin: 0 auto;">
+  <label for="checkpoint"><strong>Attendance checkpoint</strong></label>
+  <select id="checkpoint"
+          style="display:block;width:100%;margin:10px 0 20px;padding:12px;">
+    <option value="arrival">Arrival — check in</option>
+    <option value="departure">Departure — check out</option>
+  </select>
+
+  <div id="reader" style="width:100%;max-width:500px;margin:0 auto;"></div>
+
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:20px 0;">
+    <button class="button button-primary" id="start-scan" type="button">
+      Start camera
+    </button>
+    <button class="button button-secondary" id="stop-scan" type="button" disabled>
+      Stop camera
+    </button>
+  </div>
+
+  <div id="scan-result" class="notice info" role="status" aria-live="polite">
+    Select Arrival or Departure, then start the camera.
+  </div>
+</section>
+
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+(() => {
+  const result = document.getElementById("scan-result");
+  const startButton = document.getElementById("start-scan");
+  const stopButton = document.getElementById("stop-scan");
+  const checkpoint = document.getElementById("checkpoint");
+  const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+  let scanner = null;
+  let running = false;
+  let processing = false;
+
+  function showResult(message, type = "info") {
+    result.className = "notice " + type;
+    result.textContent = message;
+  }
+
+  async function startCamera() {
+    if (running) return;
+
+    if (typeof Html5Qrcode === "undefined") {
+      showResult("The scanner library did not load. Check your internet connection and refresh.", "error");
+      return;
+    }
+
+    try {
+      if (!scanner) {
+        scanner = new Html5Qrcode("reader");
+      }
+
+      startButton.disabled = true;
+      showResult("Requesting camera access…");
+
+      await scanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        handleScan,
+        () => {}
+      );
+
+      running = true;
+      stopButton.disabled = false;
+      checkpoint.disabled = true;
+      showResult("Camera is ready. Hold a participant QR badge inside the scanning box.");
+    } catch (error) {
+      startButton.disabled = false;
+      showResult("Could not start the camera. Allow camera access and use HTTPS or localhost. " + (error.message || ""), "error");
+    }
+  }
+
+  async function stopCamera() {
+    if (scanner && running) {
+      try {
+        await scanner.stop();
+      } catch (error) {
+        console.error("Could not stop scanner:", error);
+      }
+    }
+
+    running = false;
+    processing = false;
+    startButton.disabled = false;
+    stopButton.disabled = true;
+    checkpoint.disabled = false;
+  }
+
+  async function handleScan(decodedText) {
+    if (processing) return;
+    processing = true;
+
+    try {
+      await scanner.pause(true);
+      showResult("QR detected. Recording attendance…");
+
+      const response = await fetch("{{ url_for('attendance.scan_qr') }}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken
+        },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          token: decodedText.trim(),
+          checkpoint: checkpoint.value
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        const p = data.participant;
+        showResult(
+          "SUCCESS — " + data.message + " Participant: " + p.name +
+          " (" + p.code + ")" +
+          (p.organization ? " · " + p.organization : ""),
+          "success"
+        );
+      } else {
+        showResult("NOT RECORDED — " + (data.error || "The scan failed."), "error");
+      }
+    } catch (error) {
+      console.error("Attendance scan failed:", error);
+      showResult("Could not contact the attendance server. Check the connection and try again.", "error");
+    } finally {
+      if (running) {
+        window.setTimeout(async () => {
+          processing = false;
+          try {
+            await scanner.resume();
+          } catch (error) {
+            console.error("Could not resume scanner:", error);
+          }
+        }, 1800);
+      } else {
+        processing = false;
+      }
+    }
+  }
+
+  startButton.addEventListener("click", startCamera);
+  stopButton.addEventListener("click", stopCamera);
+  window.addEventListener("pagehide", () => {
+    if (scanner && running) scanner.stop().catch(() => {});
+  });
+})();
+</script>
+{% endblock %}
