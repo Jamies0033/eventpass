@@ -31,7 +31,7 @@ class Participant(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     participant_code = db.Column(
-        db.String(20), unique=True, nullable=False, index=True
+        db.String(50), unique=True, nullable=False, index=True
     )
     full_name = db.Column(db.String(160), nullable=False, index=True)
     email = db.Column(db.String(254))
